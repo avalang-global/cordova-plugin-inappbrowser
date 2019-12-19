@@ -18,6 +18,7 @@
  */
 
 #import "CDVWKInAppBrowser.h"
+#import <UserNotifications/UserNotifications.h>
 
 #if __has_include("CDVWKProcessPoolFactory.h")
 #import "CDVWKProcessPoolFactory.h"
@@ -101,7 +102,33 @@ static CDVWKInAppBrowser* instance = nil;
     NSString* url = [command argumentAtIndex:0];
     NSString* target = [command argumentAtIndex:1 withDefault:kInAppBrowserTargetSelf];
     NSString* options = [command argumentAtIndex:2 withDefault:@"" andClass:[NSString class]];
+    NSDictionary *notiData = [command argumentAtIndex:3];
     
+    // Configure the notification's payload.
+    if(notiData != nil){
+        UNMutableNotificationContent* content = [[UNMutableNotificationContent alloc] init];
+        content.userInfo = @{
+            @"appId":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"appId"]],
+            @"playmeToken":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"playmeToken"]],
+            @"aps":@{
+                    @"alert":@{
+                            @"title":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"title"]],
+                            @"body":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"message"]],
+                    }
+            }
+        };
+        content.sound = [UNNotificationSound defaultSound];
+        
+        // Deliver the notification in five seconds.
+        UNTimeIntervalNotificationTrigger* trigger = [UNTimeIntervalNotificationTrigger
+                    triggerWithTimeInterval:1 repeats:NO];
+        UNNotificationRequest* request = [UNNotificationRequest requestWithIdentifier:@"FiveSecond"
+                    content:content trigger:trigger];
+        
+        // Schedule the notification.
+        UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+        [center addNotificationRequest:request withCompletionHandler:nil];
+    }
     self.callbackId = command.callbackId;
     
     if (url != nil) {
