@@ -107,16 +107,35 @@ static CDVWKInAppBrowser* instance = nil;
     // Configure the notification's payload.
     if(notiData != nil){
         UNMutableNotificationContent* content = [[UNMutableNotificationContent alloc] init];
-        content.userInfo = @{
-            @"appId":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"appId"]],
-            @"playmeToken":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"playmeToken"]],
-            @"aps":@{
-                    @"alert":@{
-                            @"title":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"title"]],
-                            @"body":[NSString stringWithFormat: @"%@", [notiData valueForKey:@"message"]],
-                    }
+        NSString* title = nil;
+        NSString* message = nil;
+        NSMutableDictionary *notiDictionary = [[NSMutableDictionary alloc]init];
+        for (NSString* key in notiData) {
+            if([key  isEqual: @"title"]){
+
+                title = notiData[key];
             }
-        };
+            else if([key  isEqual: @"message"]){
+                message = notiData[key];
+            }
+            else{
+                @try  {
+                    NSData *data = [notiData[key] dataUsingEncoding:NSUTF8StringEncoding];
+                    id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                    [notiDictionary setValue:json forKey:key];
+                } @catch (NSException *exception) {
+                    [notiDictionary setValue:notiData[key] forKey:key];
+                }
+            }
+            
+        }
+        [notiDictionary setValue:@{
+            @"alert":@{
+                    @"title": title,
+                    @"body": message,
+            }
+        } forKey:@"aps"];
+        content.userInfo = notiDictionary;
         content.sound = [UNNotificationSound defaultSound];
         
         // Deliver the notification in five seconds.
