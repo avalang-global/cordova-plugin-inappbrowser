@@ -119,13 +119,7 @@ static CDVWKInAppBrowser* instance = nil;
                 message = notiData[key];
             }
             else{
-                @try  {
-                    NSData *data = [notiData[key] dataUsingEncoding:NSUTF8StringEncoding];
-                    id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                    [notiDictionary setValue:json forKey:key];
-                } @catch (NSException *exception) {
-                    [notiDictionary setValue:notiData[key] forKey:key];
-                }
+                [notiDictionary setValue:notiData[key] forKey:key];
             }
             
         }
