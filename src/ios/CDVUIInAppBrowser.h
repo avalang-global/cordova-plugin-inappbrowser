@@ -61,7 +61,6 @@
     CDVInAppBrowserOptions *_browserOptions;
 
 #ifdef __CORDOVA_4_0_0
-    CDVUIWebViewDelegate* _webViewDelegate;
 #else
     CDVWebViewDelegate* _webViewDelegate;
 #endif
